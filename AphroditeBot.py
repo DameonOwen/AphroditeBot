@@ -68,7 +68,7 @@ class Aphrodite(discord.Client):
 
         if author.id == self.user.id:
             return
-
+            
         cmd = yield from parse_command(message, self, loop)
         yield from cmd.do_command()
 
@@ -80,6 +80,8 @@ def admin_message(message):
         message = message.strip("@here ")
     if message.startswith("Request for Help") \
         or message.startswith("Reply") \
+        or message.startswith("ADMIN") \
+        or message.startswith("URGENT") \
         or message.endswith("no more admins online.") \
         or message.partition("PM")[1] == "PM" \
         or message == "Round has started with no admins online.":
@@ -102,7 +104,7 @@ def handle_queue():
     if  "Round has started with no admins online." in queuedMsg \
         or queuedMsg.endswith("no more admins online.") \
         or "All admins AFK" in queuedMsg:
-        queuedMsg = "@here " + queuedMsg
+        queuedMsg = "URGENT " + queuedMsg
     if admin_message(queuedMsg):
         yield from ourBot.send_message(ourBot.get_channel(config.ahelpID), queuedMsg)
     else:

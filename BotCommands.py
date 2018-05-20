@@ -26,6 +26,8 @@ def handle_outgoing(payload, loop):
     received = received[1:-1]
     received = received.decode("utf8")
 
+    print("handle_outgoing(): " + received + "\n")
+    
     writer.close()
     return received
 
@@ -63,6 +65,7 @@ class Command(object):
     def do_command(self):
         pass
 
+'''
 class Ping(Command):
 
     @asyncio.coroutine
@@ -73,7 +76,8 @@ class Ping(Command):
             yield from self.client.send_message(self.message.channel, "Server is online.")
         except OSError:
             yield from self.client.send_message(self.message.channel, "Server is offline.")
-
+'''
+			
 class Status(Command):
 
     @asyncio.coroutine
@@ -83,6 +87,8 @@ class Status(Command):
             status = yield from handle_outgoing(command, self.loop)
             status = urllib.parse.parse_qs(status)
             version = status["version"][0]
+            mode = status["mode"][0]
+            respawn = status["respawn"][0]
             admins = status["admins"][0]
             playercount = status["players"][0]
             roundduration = status["roundduration"][0]
@@ -92,6 +98,7 @@ class Status(Command):
                 if "player" in key and not "players" in key:
                     playerList.append(status[key][0])
             statusMsg = "```Admins online: %s\r\n" % admins
+            statusMsg += "Game mode: %s\r\n" % mode
             statusMsg += "Round duration: %s\r\n" % roundduration
             statusMsg += "Station time: %s\r\n" % stationtime
             statusMsg += "Players online: %s\r\n```" % playercount
@@ -120,7 +127,7 @@ class Players(Command):
             yield from self.client.send_message(self.message.author, playerMsg)
         except OSError:
             yield from self.client.send_message(self.message.author, "Server is offline.")
-
+'''
 class Manifest(Command):
 
     def fill_departments(self, manifest, departments, departmentName, manifestMsg):
@@ -135,6 +142,7 @@ class Manifest(Command):
         try:
             command = "manifest"
             manifest = yield from handle_outgoing(command, self.loop)
+            manifest = str(manifest)
             manifest = ast.literal_eval(manifest)
             manifestMsg = "```"
             if manifest == []:
@@ -176,7 +184,7 @@ class Manifest(Command):
                 except KeyError:
                     pass
                 try:
-                    manifestMsg = self.fill_departments(manifest, manifest["bots"], "Silicon:\r\n", manifestMsg)
+                    manifestMsg = self.fill_departments(manifest, manifest["bot"], "Silicon:\r\n", manifestMsg)
                     manifestMsg += "```"
                 except KeyError:
                     pass
@@ -186,7 +194,7 @@ class Manifest(Command):
             yield from self.client.send_message(self.message.author, manifestMsg)
         except OSError:
             yield from self.client.send_message(self.message.channel, "Server is offline.")
-
+'''
 class Revision(Command):
 
     @asyncio.coroutine
@@ -233,8 +241,6 @@ class Info(Command):
                 infoMsg = "```"
                 infoMsg += "Key:           " + info["key"][0] + "\r\n"
                 infoMsg += "Name:          " + info["name"][0] + "\r\n"
-                infoMsg += "Species:       " + info["species"][0] + "\r\n"
-                infoMsg += "Gender:        " + info["gender"][0] + "\r\n"
                 infoMsg += "Role:          " + info["role"][0] + "\r\n"
                 infoMsg += "Location:      " + info["loc"][0] + "\r\n"
                 infoMsg += "Turf:          " + info["turf"][0] + "\r\n"
@@ -245,6 +251,7 @@ class Info(Command):
                     infoMsg += "Yes" + "\r\n"
                 else:
                     infoMsg += "No" + "\r\n"
+                infoMsg += "Status:        " + info["stat"][0] + "\r\n"
                 infoMsg += "Mob type:      " + info["type"][0] + "\r\n"
                 damages = self.parse_damage(info["damage"][0])
                 infoMsg += "Damage:        " + "\r\n"
@@ -362,17 +369,17 @@ class Help(Command):
 
         helpMsg = ""
         helpMsg += "```Aphrodite Bot Commands:\r\n"
-        helpMsg += prepend + "ping                 - checks if server is up\r\n"
+#        helpMsg += prepend + "ping                 - checks if server is up\r\n"
         helpMsg += prepend + "status               - status, including round duration, station time,\r\n"
         helpMsg += "\tplayers online\r\n"
         helpMsg += prepend + "players              - PMs you a message of all players on server\r\n"
-        helpMsg += prepend + "manifest             - PMs you a message of the in round crew manifest\r\n"
-        helpMsg += prepend + "revision             - shows current server revision\r\n"
+#        helpMsg += prepend + "manifest             - PMs you a message of the in round crew manifest\r\n"
+#        helpMsg += prepend + "revision             - shows current server revision\r\n"
         if self.message.channel.id == config.ahelpID:
             helpMsg += prepend + "info <ckey>          - shows detailed information about ckey\r\n"
             helpMsg += prepend + "msg <ckey> <message> - adminhelps from discord to game\r\n"
             helpMsg += prepend + "notes <ckey>         - get player notes of ckey\r\n"
             helpMsg += prepend + "age <ckey>           - shows player age of ckey\r\n"
-            helpMsg += prepend + "ip <ckey>            - shows IP of ckey"
+#            helpMsg += prepend + "ip <ckey>            - shows IP of ckey"
         helpMsg += "```"
         yield from self.client.send_message(self.message.channel, helpMsg)
