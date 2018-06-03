@@ -83,9 +83,10 @@ def admin_message(message):
     if message.startswith("Request for Help") \
         or message.startswith("Reply") \
         or message.startswith("ADMIN") \
+        or message.startswith("URGENT") \
         or message.endswith("no more admins online.") \
         or message.partition("PM")[1] == "PM" \
-        or message == "has started with no admins online." \
+        or message == "Round has started with no admins online." \
         or message.startswith("Adminhelp") \
 		or message.startswith("Mentorhelp") \
 		or message.endswith("inactive staff."):
@@ -118,6 +119,10 @@ def handle_incoming(reader, writer):
     cleanMessage = " ".join(ast.literal_eval(message))
 
     loop.create_task(queue.put(cleanMessage))
+    if  "Round has started with no admins online." in queuedMsg \
+        or queuedMsg.endswith("no more admins online.") \
+        or "All admins AFK" in queuedMsg:
+        queuedMsg = "URGENT " + queuedMsg
 
 @asyncio.coroutine
 def handle_queue():
