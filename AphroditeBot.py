@@ -68,7 +68,7 @@ class Aphrodite(discord.Client):
 
         if author.id == self.user.id:
             return
-            
+
         cmd = yield from parse_command(message, self, loop)
         yield from cmd.do_command()
 
@@ -78,20 +78,43 @@ def admin_message(message):
 
     if "@here" in message:
         message = message.strip("@here ")
+    if "@everyone" in message:
+        message = message.strip("@everyone ")
     if message.startswith("Request for Help") \
         or message.startswith("Reply") \
         or message.startswith("ADMIN") \
-        or message.startswith("URGENT") \
         or message.endswith("no more admins online.") \
         or message.partition("PM")[1] == "PM" \
-        or message == "Round has started with no admins online.":
+        or message == "has started with no admins online." \
+        or message.startswith("Adminhelp") \
+		or message.startswith("Mentorhelp") \
+		or message.endswith("inactive staff."):
         return True
 
+def general_message(message):
+
+    if "@here" in message:
+        message = message.strip("@here ")
+    if "@everyone" in message:
+        message = message.strip("@everyone ")
+    if message.startswith("RADIO - "):
+        message = message.strip("RADIO - ")
+        return True
+
+def command_message(message):
+
+    if "@here" in message:
+        message = message.strip("@here ")
+    if "@everyone" in message:
+        message = message.strip("@everyone ")
+    if message.startswith("ANNOUNCEMENT - "):
+        return True
+		
 @asyncio.coroutine
 def handle_incoming(reader, writer):
-
     data = yield from reader.read(-1)
     message = data.decode()
+    print("Message Recieved:  "+"'"+message+"'\n\n")
     cleanMessage = " ".join(ast.literal_eval(message))
 
     loop.create_task(queue.put(cleanMessage))
@@ -101,14 +124,28 @@ def handle_queue():
 
     queuedMsg = yield from queue.get()
     loop.create_task(handle_queue())
-    if  "Round has started with no admins online." in queuedMsg \
-        or queuedMsg.endswith("no more admins online.") \
-        or "All admins AFK" in queuedMsg:
-        queuedMsg = "URGENT " + queuedMsg
+    queuedMsg = queuedMsg.strip("'")
     if admin_message(queuedMsg):
+        if "help" in queuedMsg:
+            queuedMsg = "@here " + queuedMsg
+        elif "has requested additional admins" in queuedMsg:
+            queuedMsg = "@here " + queuedMsg
         yield from ourBot.send_message(ourBot.get_channel(config.ahelpID), queuedMsg)
+        print("'"+queuedMsg+"'" +" sent to ahelp channel\n\n")
+
+    elif command_message(queuedMsg):
+        queuedMsg = queuedMsg.replace("@", "(at)")
+        queuedMsg = queuedMsg.strip("ANNOUNCEMENT - ")
+        yield from ourBot.send_message(ourBot.get_channel(config.commandID), queuedMsg)
+        print("'"+queuedMsg+"'" +" sent to command channel\n\n")
+
+    elif general_message(queuedMsg):
+        yield from ourBot.send_message(ourBot.get_channel(config.generalID), queuedMsg)
+        print("'"+queuedMsg+"'" +" sent to general channel\n\n")
+
     else:
         yield from ourBot.send_message(ourBot.get_channel(config.mainID), queuedMsg)
+        print("'"+queuedMsg+"'" +" sent to main channel\n\n")
 
 def main():
 
