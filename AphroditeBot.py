@@ -140,11 +140,11 @@ def handle_queue():
 
     elif command_message(queuedMsg):
         queuedMsg = queuedMsg.replace("@", "(at)")
-        queuedMsg = queuedMsg.strip("ANNOUNCEMENT - ")
-        cmdMsg = queuedMsg.split("\n")
-        yield from ourBot.send_message(ourBot.get_channel(config.commandID), cmdMsg[0])
+        queuedMsg = queuedMsg.strip("ANNOUNCEMENT -")
+        cmdMsg = queuedMsg.split("\\n")
+        yield from ourBot.send_message(ourBot.get_channel(config.commandID), cmdMsg[0].upper())
         yield from ourBot.send_message(ourBot.get_channel(config.commandID), cmdMsg[1])
-        print("'"+header+"'"+"\n'"+contents+"'\n"+" sent to command channel\n\n")
+        print("'"+header+"'"+"\n'"+contents+"'\n"+"sent to command channel\n\n")
 
     elif general_message(queuedMsg):
         yield from ourBot.send_message(ourBot.get_channel(config.generalID), queuedMsg)
